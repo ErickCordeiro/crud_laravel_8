@@ -4,12 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUpdatePost;
 use App\Models\Post;
+use Illuminate\Http\Request;
 
 class PostController extends Controller
 {
     public function index()
     {
-        $posts = Post::all();
+        $posts = Post::latest()->paginate();
         return view('admin.posts.index', compact('posts'));
     }
 
@@ -66,5 +67,17 @@ class PostController extends Controller
         return redirect()
             ->route('posts.index')
             ->with('message', 'Post Deletado com sucesso!');
+    }
+
+    public function search(Request $request)
+    {
+
+        $filters = $request->except('_token');
+
+        $posts = Post::where('title', '=', $request->search)
+            ->orWhere('content', 'LIKE', '%{$request->search}%')    
+            ->paginate(1);
+
+        return view('admin.posts.index', compact('posts', 'filters'));
     }
 }
